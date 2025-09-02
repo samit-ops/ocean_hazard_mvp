@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌊 Ocean Info</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #0099cc, #66ccff);
+    color: white;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+  header {
+    padding: 1rem;
+    background: rgba(0,0,0,0.4);
+  }
+  h1 { margin: 0; }
+  .container {
+    margin: 2rem auto;
+    padding: 2rem;
+    max-width: 600px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  select, button {
+    margin: 0.5rem 0;
+    padding: 0.7rem;
+    width: 100%;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  #info {
+    margin-top: 1.5rem;
+    text-align: left;
+    background: rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 10px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🌊 Ocean Information Portal</h1>
+  <p>Get live ocean & weather data for coastal regions</p>
+</header>
+
+<div class="container">
+  <h2>Select Your Location</h2>
+  <select id="locationSelect">
+    <option value="">-- Select Coastal District --</option>
+    <option value="Chennai,IN">Chennai</option>
+    <option value="Mumbai,IN">Mumbai</option>
+    <option value="Kolkata,IN">Kolkata</option>
+    <option value="Visakhapatnam,IN">Visakhapatnam</option>
+    <option value="Kochi,IN">Kochi</option>
+    <option value="Goa,IN">Goa</option>
+    <option value="Mangalore,IN">Mangalore</option>
+    <option value="Puri,IN">Puri</option>
+  </select>
+
+  <button id="currentLocation">📍 Use My Current Location</button>
+  <button id="getData">✅ OK</button>
+
+  <div id="info"></div>
+</div>
+
+<script>
+  const OPENWEATHER_API_KEY = "6f0804e337464264b65172336250209"; 
+  const STORMGLASS_API_KEY = "2d455974-8822-11f0-b0b8-0242ac130006-2d455a3c-8822-11f0-b0b8-0242ac130006";
+
+  // Display live data
+  function displayData(data) {
+    const infoDiv = document.getElementById("info");
+    infoDiv.innerHTML = `
+      <h3>Live Data</h3>
+      <p><b>🌬️ Wind Speed:</b> ${data.windSpeed} m/s</p>
+      <p><b>🌡️ Temperature:</b> ${data.temp} °C</p>
+      <p><b>🌊 Tide Height:</b> ${data.tideHeight || "N/A"} m</p>
+      <p><b>☁️ Weather:</b> ${data.weather || "N/A"}</p>
+    `;
+  }
+
+  // Fetch weather from OpenWeather
+  async function fetchWeather(lat, lon) {
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${OPENWEATHER_API_KEY}`);
+    const data = await res.json();
+    return {
+      windSpeed: data.wind.speed,
+      temp: data.main.temp,
+      weather: data.weather[0].description
+    };
+  }
+
+  // Fetch tides from StormGlass
+  async function fetchTides(lat, lon) {
+    const res = await fetch(`https://api.stormglass.io/v2/tide/extremes/point?lat=${lat}&lng=${lon}`, {
+      headers: { 'Authorization': STORMGLASS_API_KEY }
+    });
+    const data = await res.json();
+    // Use nearest upcoming tide
+    return { tideHeight: data.data[0]?.height || null };
+  }
+
+  // Main function to fetch and display ocean info
+  async function getOceanInfo(lat, lon) {
+    try {
+      const weather = await fetchWeather(lat, lon);
+      const tides = await fetchTides(lat, lon);
+      displayData({ ...weather, ...tides });
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to fetch ocean/weather data.");
+    }
+  }
+
+  // Handle location selection
+  async function handleSelectedLocation() {
+    const location = document.getElementById("locationSelect").value;
+    if (!location) { alert("Please select a location first!"); return; }
+
+    try {
+      const res = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=1&appid=${OPENWEATHER_API_KEY}`);
+      const locData = await res.json();
+      if (locData.length > 0) {
+        getOceanInfo(locData[0].lat, locData[0].lon);
+      } else {
+        alert("❌ Location not found!");
+      }
+    } catch(err) {
+      console.error(err);
+      alert("❌ Error fetching location data.");
+    }
+  }
+
+  // Handle current geolocation
+  function handleCurrentLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => getOceanInfo(pos.coords.latitude, pos.coords.longitude),
+        (err) => alert("❌ Location access denied or error occurred: " + err.message)
+      );
+    } else {
+      alert("❌ Geolocation not supported in this browser.");
+    }
+  }
+
+  document.getElementById("getData").addEventListener("click", handleSelectedLocation);
+  document.getElementById("currentLocation").addEventListener("click", handleCurrentLocation);
+
+</script>
+</body>
+</html>
