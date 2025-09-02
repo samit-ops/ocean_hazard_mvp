@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Disaster Management Portal</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-sA+oKk0g0b2u6q6XkY3w8Xw2p6Q3C6p1wG6p7X1vYkM=" crossorigin=""/>
+
+  <style>
+    :root{
+      --accent: #0b76ef;
+      --muted: #666;
+      --card-bg: rgba(255,255,255,0.9);
+      --dark-bg: rgba(0,0,0,0.6);
+      --safe-bg: #2c3e50;
+    }
+    html,body{height:100%;margin:0;font-family:Inter,Arial,Helvetica,sans-serif}
+    body{
+      background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('https://i.ibb.co/r4jtVqp/disaster-bg.jpg') center/cover no-repeat;
+      color:#fff;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+  
+
+    .middle-bottom-btn {text-align: center; margin-top: 20px;}
+    .ocean-btn {background: linear-gradient(135deg, #0077b6, #00b4d8); color: #fff; padding: 10px 24px; font-size: 15px; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s ease;}
+    .ocean-btn:hover {background: linear-gradient(135deg, #0096c7, #48cae4); transform: scale(1.07); box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);}
+
+    /* NAVBAR */
+    .navbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background: var(--dark-bg);position:relative;z-index:50;}
+    .brand{font-weight:700;font-size:1.15rem}
+    .hamburger{font-size:22px;cursor:pointer;margin-right:12px}
+    .navbar-right{display:flex;align-items:center;gap:12px}
+    .logo-right img{height:60px;display:block}
+    #language{padding:6px;border-radius:6px;border:0;background:#fff;color:#111;font-weight:600}
+
+    /* SIDEBAR */
+    .sidebar{position:fixed;left:0;top:0;height:100%;width:0;overflow:hidden;background: rgba(8,8,8,0.98);color:#fff;transition:width 0.28s;z-index:100;padding-top:70px;}
+    .sidebar a{display:block;padding:14px 22px;color:#ddd;text-decoration:none;font-weight:600}
+    .sidebar a:hover{background:#222}
+    .close-btn{position:absolute;right:12px;top:12px;font-size:26px;cursor:pointer}
+
+    /* MAIN CONTENT */
+    .container{max-width:1100px;margin:18px auto;padding:12px;flex:1;z-index:10}
+    .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 16px;border-radius:12px;}
+    .hero h1{margin:4px 0 8px;font-size:30px; text-shadow:2px 2px 6px rgba(0,0,0,0.7)}
+    .hero p{margin:0 0 18px;color:#e6eefc}
+    .login-options{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+    .login-card{background:var(--card-bg);color:#111;padding:14px 20px;border-radius:10px;cursor:pointer;min-width:180px;box-shadow:0 6px 18px rgba(0,0,0,0.25);font-weight:700;text-align:center;}
+    .login-card:hover{transform:translateY(-6px);transition:0.18s}
+    .logos{display:flex;gap:24px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+    .logos img{height:50px;background:#fff;padding:6px;border-radius:8px}
+
+    /* MAP SECTION */
+    #mapSection{display:none;padding:12px 0}
+    #map{width:100%;height:560px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,0.4)}
+    .map-back-btn{margin-top:12px;padding:10px 16px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+
+    /* FOOTER */
+    footer{background: rgba(0,0,0,0.75);padding:18px;text-align:center;font-size:14px;color:#e6eefc}
+
+    /* MODALS */
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;padding:18px}
+    .modal .card{background:#fff;color:#111;padding:18px;border-radius:10px;max-width:520px;width:100%;max-height:90vh;overflow:auto}
+    .modal h3{margin:0 0 10px}
+    .form-row{display:flex;gap:10px}
+    .form-row .col{flex:1;min-width:0}
+    label{display:block;font-weight:700;margin-top:10px}
+    input[type="text"], select{width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;margin-top:6px}
+    .submit-btn{margin-top:14px;background:var(--accent);color:#fff;padding:10px;border:0;border-radius:6px;cursor:pointer;width:100%}
+    .close-modal{float:right;color:#d33;font-weight:700;cursor:pointer}
+
+    /* Ocean Modal */
+    #oceanModal .card{max-width:600px;}
+    #oceanModal select, #oceanModal button{width:100%;margin:6px 0;padding:8px;border-radius:6px;border:none;font-size:1rem}
+    #oceanInfo{margin-top:12px;background:rgba(0,0,0,0.1);padding:12px;border-radius:8px;color:#fff}
+
+    /* small screens */
+    @media (max-width:720px){
+      .hero h1{font-size:22px}
+      .logo-right img{height:48px}
+      .login-options{flex-direction:column}
+      #map{height:420px}
+    }
+    
+#language {
+  padding: 8px 12px;       
+  border-radius: 8px;      
+  border: none;
+  background: #fff;
+  color: #111;
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 140px;      
+  max-width: 200px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+#language:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  transform: scale(1.03);
+}
+
+#language option {
+  padding: 6px;
+  font-size: 14px;
+}
+
+  </style>
+</head>
+<body>
+  <!-- Add this inside <body>, before navbar-right or inside navbar -->
+<div class="navbar">
+  <div class="hamburger" onclick="openSidebar()">☰</div>
+  <div class="brand">Disaster Management Portal</div>
+</div>
+
+
+<!-- Navbar Right -->
+<div class="navbar-right">
+  <select id="language" onchange="changeLanguage()">
+    <option value="en">English</option>
+    <option value="hi">Hindi</option>
+    <option value="te">Telugu</option>
+    <option value="ta">Tamil</option>
+    <option value="bn">Bengali</option>
+    <option value="ml">Malayalam</option>
+    <option value="gu">Gujarati</option>
+    <option value="kn">Kannada</option>
+    <option value="mr">Marathi</option>
+  </select>
+  <div class="logo-right" title="Azadi Ka Amrit Mahotsav">
+    <img src="azadi.png" alt="Azadi Logo">
+  </div>
+</div>
+
+ <!-- Emergency Protocols Modal -->
+<div id="emergencyModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="card" role="document">
+    <span class="close-modal" onclick="closeEmergencyModal()">&times;</span>
+    <h3>🛟 Emergency Protocols for Ocean Disasters</h3>
+    <div id="emergencyContent" style="line-height:1.6; margin-top:10px;">
+      <h4>🌪 Cyclone / Storm Surge</h4>
+      <ul>
+        <li>Stay indoors, away from windows.</li>
+        <li>Move to higher floors if flooding occurs.</li>
+        <li>Keep emergency kit ready (water, flashlight, medicines).</li>
+      </ul>
+      <h4>🌊 Tsunami</h4>
+      <ul>
+        <li>Evacuate to higher ground immediately.</li>
+        <li>Do not return until authorities declare safe.</li>
+      </ul>
+      <h4>🔥 Coastal Flooding</h4>
+      <ul>
+        <li>Switch off electricity and gas connections.</li>
+        <li>Move valuables and important documents to safe place.</li>
+        <li>Follow local alerts for evacuation.</li>
+      </ul>
+      <h4>💨 High Winds / Cyclone Gusts</h4>
+      <ul>
+        <li>Avoid going outside during strong winds.</li>
+        <li>Secure loose objects around your house.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar" aria-hidden="true">
+    <span class="close-btn" onclick="closeSidebar()">&times;</span>
+    <a href="#" onclick="showHome()">Dashboard</a>
+    <a href="#" onclick="showAlerts()">Alerts</a>
+    <a href="#" onclick="showResources()">Resources</a>
+    <a href="#" onclick="showSafety()">Safety Measures</a>
+    <a href="#" onclick="showMap()">View Map</a>
+    <a href="#" onclick="closeSidebar()">Settings</a>
+    <!-- In your sidebar div -->
+<a href="#" onclick="openEmergencyModal()">🛟 Emergency Protocols</a>
+
+  </div>
+  <ul>
+  <li>NDRF: <a href="tel:01124363260">011-24363260</a></li>
+  <li>Coastal Guard: <a href="tel:18001801234">1800-180-1234</a></li>
+  <li>Police / Ambulance / Fire: <a href="tel:112">112</a></li>
+</ul>
+<!--map-->
+<div class="login-card" onclick="showMap()">
+  🗺️ View Coastal Map
+</div>
+
+
+  <!-- MAIN CONTAINER -->
+  <div class="container">
+    <!-- HERO -->
+    <section id="homeSection" class="hero">
+      <h1 id="pageTitle">Welcome to Disaster Management Portal</h1>
+      <p id="pageSubtitle">Get alerts, report incidents and learn safety measures.</p>
+
+      <div class="login-options">
+        <div class="login-card" onclick="openCitizenForm()">
+          👤 <span id="citizenText">Login as Citizen</span>
+        </div>
+        <div class="login-card" onclick="alert('Official/Researcher Login (placeholder)')">
+          🧑‍💼 <span id="officialText">Login as Official / Researcher</span>
+        </div>
+      </div>
+
+      <div class="middle-bottom-btn">
+        <button class="ocean-btn" onclick="openOceanModal()">🌊 Ocean Info</button>
+      </div>
+
+      <div class="logos" aria-hidden="false">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/UNDP_logo.svg" alt="UNDP">
+        <img src="ndrf.png" alt="NDRF">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/WHO_logo.svg" alt="WHO">
+      </div>
+    </section>
+
+    <!-- MAP SECTION -->
+    <section id="mapSection">
+      <h2 id="mapTitle">🌍 Disaster Prone Areas Map (Ocean Threats Highlighted)</h2>
+      <div id="map"></div>
+      <div style="text-align:center">
+        <button class="map-back-btn" onclick="hideMap()">⬅ Back to Home</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div id="footerInfo">
+      🌊 Ocean: Keep away from shore during alerts • 🌪 Cyclone: Follow evacuation orders • 🚨 Report incidents to local authorities
+    </div>
+    <div style="margin-top:6px;font-size:12px;color:#cfe6ff">&copy; 2025 Disaster Management Portal</div>
+  </footer>
+
+  <!-- CITIZEN FORM MODAL -->
+  <div id="citizenModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="card" role="document">
+      <span class="close-modal" onclick="closeCitizenForm()">&times;</span>
+      <h3 id="formTitle">Citizen Registration</h3>
+      <form id="citizenForm" onsubmit="handleFormSubmit(event)">
+        <label id="lblName">Name</label>
+        <input id="inpName" type="text" required placeholder="Full name">
+        <label id="lblAadhaar">Aadhaar Number</label>
+        <input id="inpAadhaar" type="text" maxlength="12" inputmode="numeric" pattern="\d{12}" placeholder="12 digit Aadhaar" required>
+        <label id="lblGender">Gender</label>
+        <select id="inpGender" required>
+          <option value="">Select</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Other</option>
+        </select>
+        <label id="lblState">State / UT</label>
+        <select id="inpState" required onchange="stateChanged()"></select>
+        <label id="lblDistrict">District</label>
+        <select id="inpDistrictSelect" style="display:none"></select>
+        <input id="inpDistrictText" type="text" placeholder="District" style="display:none">
+        <label id="lblCity">City / Town</label>
+        <select id="inpCitySelect" style="display:none"></select>
+        <input id="inpCityText" type="text" placeholder="City / Town" style="display:none">
+        <button class="submit-btn" id="submitBtn" type="submit">Submit</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- OCEAN INFO MODAL -->
+  <div id="oceanModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="card" role="document">
+      <span class="close-modal" onclick="closeOceanModal()">&times;</span>
+      <h3>🌊 Ocean & Weather Info</h3>
+      <select id="oceanLocation">
+        <option value="">-- Select Coastal District --</option>
+        <option value="Chennai,IN">Chennai</option>
+        <option value="Mumbai,IN">Mumbai</option>
+        <option value="Kolkata,IN">Kolkata</option>
+        <option value="Visakhapatnam,IN">Visakhapatnam</option>
+        <option value="Kochi,IN">Kochi</option>
+        <option value="Goa,IN">Goa</option>
+        <option value="Mangalore,IN">Mangalore</option>
+        <option value="Puri,IN">Puri</option>
+      </select>
+      <button onclick="useCurrentOceanLocation()">📍 Use My Current Location</button>
+      <button onclick="fetchOceanData()">✅ Get Info</button>
+      <div id="oceanInfo"></div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o9N1j7kXg+0b2u6q6XkY3w8Xw2p6Q3C6p1wG6p7X1vYkM=" crossorigin=""></script>
+
+  <script>
+    /* ------------------ Sidebar & Sections ------------------ */
+    function openSidebar(){ document.getElementById('sidebar').style.width='300px'; document.getElementById('sidebar').setAttribute('aria-hidden','false') }
+    function closeSidebar(){ document.getElementById('sidebar').style.width='0'; document.getElementById('sidebar').setAttribute('aria-hidden','true') }
+    function showHome(){ closeSidebar(); document.getElementById('homeSection').style.display='block'; document.getElementById('mapSection').style.display='none'; }
+    function showMap(){ closeSidebar(); document.getElementById('homeSection').style.display='none'; document.getElementById('mapSection').style.display='block'; setTimeout(()=>{ if(!window.mapInitialized) initMap(); },50);}
+    function hideMap(){ showHome(); }
+    function showAlerts(){ alert('Alerts (placeholder)') }
+    function showResources(){ alert('Resources (placeholder)') }
+    function showContacts(){ alert('Emergency Contacts (placeholder)') }
+    function showSafety(){ alert('Safety Measures (placeholder)') }
+
+    /* ------------------ Citizen Modal ------------------ */
+    function openCitizenForm(){ document.getElementById('citizenModal').style.display='flex'; document.getElementById('citizenModal').setAttribute('aria-hidden','false'); }
+    function closeCitizenForm(){ document.getElementById('citizenModal').style.display='none'; document.getElementById('citizenModal').setAttribute('aria-hidden','true'); }
+
+    /* ------------------ Ocean Modal ------------------ */
+    function openOceanModal(){ document.getElementById('oceanModal').style.display='flex'; document.getElementById('oceanModal').setAttribute('aria-hidden','false'); }
+    function closeOceanModal(){ document.getElementById('oceanModal').style.display='none'; document.getElementById('oceanModal').setAttribute('aria-hidden','true'); }
+
+    /* ------------------ API KEYS ------------------ */
+    const OPENWEATHER_API_KEY = "6f0804e337464264b65172336250209";
+    const STORMGLASS_API_KEY = "2d455974-8822-11f0-b0b8-0242ac130006-2d455a3c-8822-11f0-b0b8-0242ac130006";
+
+    let currentOceanCoords = null;
+
+    function useCurrentOceanLocation(){
+      if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(pos=>{
+          currentOceanCoords = {lat: pos.coords.latitude, lon: pos.coords.longitude};
+          alert("Location captured! Now click 'Get Info'");
+        }, err=>{ alert("Location access denied or error."); });
+      } else alert("Geolocation not supported.");
+    }
+
+    async function fetchOceanData(){
+      let lat, lon;
+      const sel = document.getElementById('oceanLocation').value;
+      if(sel){ 
+        const res = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${sel}&limit=1&appid=${OPENWEATHER_API_KEY}`);
+        const data = await res.json();
+        if(data.length>0){ lat = data[0].lat; lon = data[0].lon; } else { alert("Location not found"); return; }
+      } else if(currentOceanCoords){ lat=currentOceanCoords.lat; lon=currentOceanCoords.lon; }
+      else { alert("Select location or use current location."); return; }
+
+      try{
+        const weatherRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${OPENWEATHER_API_KEY}`);
+        const weatherData = await weatherRes.json();
+        const tideRes = await fetch(`https://api.stormglass.io/v2/tide/extremes/point?lat=${lat}&lng=${lon}`, { headers: { 'Authorization': STORMGLASS_API_KEY }});
+        const tideData = await tideRes.json();
+        const infoDiv = document.getElementById('oceanInfo');
+        infoDiv.innerHTML = `
+          <p><b>🌬️ Wind Speed:</b> ${weatherData.wind.speed} m/s</p>
+          <p><b>🌡️ Temperature:</b> ${weatherData.main.temp} °C</p>
+          <p><b>🌦️ Weather:</b> ${weatherData.weather[0].description}</p>
+          <p><b>🌊 Next Tide:</b> ${tideData.data.length>0 ? tideData.data[0].height+' m at '+new Date(tideData.data[0].time).toLocaleTimeString() : 'N/A'}</p>
+        `;
+      } catch(err){ console.error(err); alert("Error fetching ocean/weather data"); }
+    }
+
+    
+// Open / Close Emergency Modal
+function openEmergencyModal(){
+  document.getElementById('emergencyModal').style.display='flex';
+  document.getElementById('emergencyModal').setAttribute('aria-hidden','false');
+}
+
+function closeEmergencyModal(){
+  document.getElementById('emergencyModal').style.display='none';
+  document.getElementById('emergencyModal').setAttribute('aria-hidden','true');
+}
+/* language js function*/
+
+function changeLanguage() {
+  const lang = document.getElementById('language').value;
+
+  // Page content translations
+  const translations = {
+    en: {
+      pageTitle: "Welcome to Disaster Management Portal",
+      pageSubtitle: "Get alerts, report incidents and learn safety measures.",
+      citizenText: "Login as Citizen",
+      officialText: "Login as Official / Researcher",
+      formTitle: "Citizen Registration",
+      lblName: "Name",
+      lblAadhaar: "Aadhaar Number",
+      lblGender: "Gender",
+      lblState: "State / UT",
+      lblDistrict: "District",
+      lblCity: "City / Town",
+      submitBtn: "Submit"
+    },
+    ml: {
+  pageTitle: "ദുരന്ത മാനേജ്മെന്റ് പോർട്ടലിലേക്ക് സ്വാഗതം",
+  pageSubtitle: "അറിയിപ്പുകൾ ലഭിക്കൂ, സംഭവങ്ങൾ റിപ്പോർട്ട് ചെയ്യൂ, സുരക്ഷാ നടപടികൾ പഠിക്കൂ.",
+  citizenText: "പൗരൻ ആയി ലോഗിൻ ചെയ്യുക",
+  officialText: "അധിക്കാരി / ഗവേഷകൻ ആയി ലോഗിൻ ചെയ്യുക",
+  formTitle: "പൗരൻ രജിസ്ട്രേഷൻ",
+  lblName: "പേര്",
+  lblAadhaar: "ആധാർ നമ്പർ",
+  lblGender: "ലിംഗം",
+  lblState: "സംസ്ഥാനം / കേന്ദ്ര ഭരണപ്രദേശം",
+  lblDistrict: "ജില്ല",
+  lblCity: "നഗരം / പട്ടണം",
+  submitBtn: "സമർപ്പിക്കുക"
+},
+
+    hi: {
+      pageTitle: "आपका स्वागत है आपदा प्रबंधन पोर्टल में",
+      pageSubtitle: "अलर्ट प्राप्त करें, घटनाओं की रिपोर्ट करें और सुरक्षा उपाय जानें।",
+      citizenText: "नागरिक के रूप में लॉगिन करें",
+      officialText: "अधिकारी / शोधकर्ता के रूप में लॉगिन करें",
+      formTitle: "नागरिक पंजीकरण",
+      lblName: "नाम",
+      lblAadhaar: "आधार नंबर",
+      lblGender: "लिंग",
+      lblState: "राज्य / केंद्र शासित प्रदेश",
+      lblDistrict: "ज़िला",
+      lblCity: "शहर / कस्बा",
+      submitBtn: "जमा करें"
+    },
+    ta: {
+      pageTitle: "பாதுகாப்பு மேலாண்மை போர்ட்டலுக்கு வரவேற்கிறோம்",
+      pageSubtitle: "அறிவிப்புகளைப் பெறவும், சம்பவங்களைப் புகாரளிக்கவும், பாதுகாப்பு நடவடிக்கைகள் கற்றுக்கொள்ளவும்.",
+      citizenText: "பொதுமக்கள் லாகின்",
+      officialText: "அதிகாரி / ஆராய்ச்சியாளர் லாகின்",
+      formTitle: "பொதுமக்கள் பதிவு",
+      lblName: "பெயர்",
+      lblAadhaar: "ஆதார் எண்",
+      lblGender: "பாலினம்",
+      lblState: "மாநிலம் / யூ.டி.",
+      lblDistrict: "மாவட்டம்",
+      lblCity: "நகர் / ஊர்",
+      submitBtn: "சமர்ப்பிக்கவும்"
+    },
+    te: {
+      pageTitle: "డిజాస్టర్ మేనేజ్మెంట్ పోర్టల్‌కు స్వాగతం",
+      pageSubtitle: "అలర్ట్‌లు పొందండి, ఘటనలను రిపోర్ట్ చేయండి మరియు భద్రతా చర్యలను తెలుసుకోండి.",
+      citizenText: "నాగరికులుగా లాగిన్ చేయండి",
+      officialText: "అధికారులు / పరిశోధకులు లాగిన్",
+      formTitle: "నాగరికుల నమోదు",
+      lblName: "పేరు",
+      lblAadhaar: "ఆధార్ సంఖ్య",
+      lblGender: "లింగం",
+      lblState: "రాష్ట్రం / కేంద్ర పాలిత ప్రాంతం",
+      lblDistrict: "జిల్లా",
+      lblCity: "నగరం / పట్టణం",
+      submitBtn: "సమర్పించండి"
+    },
+    bn: {
+      pageTitle: "আপদা ব্যবস্থাপনা পোর্টালে স্বাগতম",
+      pageSubtitle: "অ্যালার্ট পান, ঘটনা রিপোর্ট করুন এবং নিরাপত্তা ব্যবস্থা শিখুন।",
+      citizenText: "নাগরিক হিসাবে লগইন করুন",
+      officialText: "অফিসার / গবেষক হিসাবে লগইন করুন",
+      formTitle: "নাগরিক নিবন্ধন",
+      lblName: "নাম",
+      lblAadhaar: "আধার নম্বর",
+      lblGender: "লিঙ্গ",
+      lblState: "রাজ্য / কেন্দ্রশাসিত অঞ্চল",
+      lblDistrict: "জেলা",
+      lblCity: "শহর / টাউন",
+      submitBtn: "জমা দিন"
+    },
+    gu: {
+      pageTitle: "આપદા વ્યવસ્થાપન પોર્ટલમાં સ્વાગત છે",
+      pageSubtitle: "અલર્ટ મેળવો, ઘટનાઓની રિપોર્ટ કરો અને સુરક્ષા પગલાં શીખો.",
+      citizenText: "નાગરિક તરીકે લોગિન કરો",
+      officialText: "અધિકારી / સંશોધક તરીકે લોગિન કરો",
+      formTitle: "નાગરિક નોંધણી",
+      lblName: "નામ",
+      lblAadhaar: "આધાર નંબર",
+      lblGender: "લિંગ",
+      lblState: "રાજ્ય / કેન્દ્રીય ક્ષેત્ર",
+      lblDistrict: "જિલ્લો",
+      lblCity: "શહેર / ટાઉન",
+      submitBtn: "સબમિટ કરો"
+    },
+    mr: {
+      pageTitle: "आपत्ती व्यवस्थापन पोर्टलमध्ये स्वागत आहे",
+      pageSubtitle: "अलर्ट मिळवा, घटना नोंदवा आणि सुरक्षा उपाय शिका.",
+      citizenText: "नागरिक म्हणून लॉगिन करा",
+      officialText: "अधिकारी / संशोधक म्हणून लॉगिन करा",
+      formTitle: "नागरिक नोंदणी",
+      lblName: "नाव",
+      lblAadhaar: "आधार क्रमांक",
+      lblGender: "लिंग",
+      lblState: "राज्य / केंद्र शासित प्रदेश",
+      lblDistrict: "जिल्हा",
+      lblCity: "शहर / तालुका",
+      submitBtn: "सबमिट करा"
+    },
+    kn: {
+      pageTitle: "ಡಿಸಾಸ್ಟರ್ ಮ್ಯಾನೇಜ್‌ಮೆಂಟ್ ಪೋರ್ಟಲ್‌ಗೆ ಸ್ವಾಗತ",
+      pageSubtitle: "ಅಲರ್ಟ್‌ಗಳನ್ನು ಪಡೆಯಿರಿ, ಘಟನಾವಳಿಗಳನ್ನು ವರದಿ ಮಾಡಿ ಮತ್ತು ಭದ್ರತಾ ಕ್ರಮಗಳನ್ನು ಕಲಿಯಿರಿ.",
+      citizenText: "ನಗರಿಕರಾಗಿ ಲಾಗಿನ್ ಮಾಡಿ",
+      officialText: "ಅಧಿಕಾರಿ / ಸಂಶೋಧಕ ಲಾಗಿನ್",
+      formTitle: "ನಗರಿಕರ ನೋಂದಣಿ",
+      lblName: "ಹೆಸರು",
+      lblAadhaar: "ಆಧಾರ್ ಸಂಖ್ಯೆ",
+      lblGender: "ಲಿಂಗ",
+      lblState: "ರಾಜ್ಯ / ಕೇಂದ್ರಾಡಳಿತ ಪ್ರದೇಶ",
+      lblDistrict: "ಜಿಲ್ಲೆ",
+      lblCity: "ನಗರ / ಪಟ್ಟಣ",
+      submitBtn: "ಸಲ್ಲಿಸು"
+    }
+  };
+
+  const t = translations[lang] || translations.en;
+
+  // Update page content
+  document.getElementById('pageTitle').innerText = t.pageTitle;
+  document.getElementById('pageSubtitle').innerText = t.pageSubtitle;
+  document.getElementById('citizenText').innerText = t.citizenText;
+  document.getElementById('officialText').innerText = t.officialText;
+  document.getElementById('formTitle').innerText = t.formTitle;
+  document.getElementById('lblName').innerText = t.lblName;
+  document.getElementById('lblAadhaar').innerText = t.lblAadhaar;
+  document.getElementById('lblGender').innerText = t.lblGender;
+  document.getElementById('lblState').innerText = t.lblState;
+  document.getElementById('lblDistrict').innerText = t.lblDistrict;
+  document.getElementById('lblCity').innerText = t.lblCity;
+  document.getElementById('submitBtn').innerText = t.submitBtn;
+}
+
+
+    /* ------------------ Leaflet Map ------------------ */
+    let map, mapInitialized=false;
+    function initMap(){
+      map = L.map('map').setView([20.5937,78.9629], 5);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(map);
+      mapInitialized=true;
+      // Add marker examples for coastal cities
+      const coastalCities = [
+        {name:'Chennai', coords:[13.0827,80.2707]},
+        {name:'Mumbai', coords:[19.0760,72.8777]},
+        {name:'Kolkata', coords:[22.5726,88.3639]},
+        {name:'Visakhapatnam', coords:[17.6868,83.2185]},
+        {name:'Kochi', coords:[9.9312,76.2673]},
+      ];
+      coastalCities.forEach(c=>L.marker(c.coords).addTo(map).bindPopup(c.name));
+    }
+
+    function handleFormSubmit(e){ e.preventDefault(); alert("Form submitted! (Placeholder)"); closeCitizenForm(); }
+   
+  </script>
+</body>
+</html>
