@@ -1,0 +1,43 @@
+/* Map must have explicit height */
+#map { height: 340px; }
+
+/* Bottom nav safe area on mobile */
+body { padding-bottom: 72px; }
+
+/* Sentiment Analysis Modal */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+
+.modal .card {
+  background: white;
+  padding: 1rem;
+  border-radius: 1rem;
+  max-width: 500px;
+  width: 90%;
+}
+
+.close-modal {
+  float: right;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.submit-btn {
+  margin-top: 0.5rem;
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+/* Optional hover */
+.submit-btn:hover { background-color: #1d4ed8; }
