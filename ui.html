@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HazardWatch – Web UI</title>
+  <link rel="stylesheet" href="ui.css">
+<script src="ui.js" defer></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+ 
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    /* Map must have explicit height */
+    #map { height: 340px; }
+    /* Bottom nav safe area on mobile */
+    body { padding-bottom: 72px; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+  <!-- Top Bar -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">🌊</span>
+        <h1 class="font-bold text-xl" id="t_appName">HazardWatch</h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <label for="lang" class="text-sm text-slate-500" id="t_language">Language</label>
+        <select id="lang" class="rounded-md border-slate-300 text-sm px-2 py-1">
+          <option value="en">English</option>
+          <option value="hi">हिन्दी</option>
+        </select>
+        <button id="reportBtn" class="ml-2 rounded-xl bg-rose-600 text-white text-sm font-medium px-4 py-2 hover:bg-rose-700 active:scale-[.98]">
+          ⚠️ <span id="t_reportHazard">Report Hazard</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-6xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- Map + Quick info -->
+    <section class="lg:col-span-2">
+      <div class="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+          <h2 class="font-semibold" id="t_mapView">Map View (nearby hazards)</h2>
+          <button id="locateBtn" class="text-xs px-3 py-1 rounded-lg border border-slate-300 hover:bg-slate-50" title="Use my location">📍 <span id="t_useMyLocation">Use My Location</span></button>
+        </div>
+        <div id="map"></div>
+      </div>
+
+      <!-- Quick Tips / Legend -->
+      <div class="mt-4 grid sm:grid-cols-3 gap-3">
+        <div class="rounded-xl bg-white border border-slate-200 p-3 shadow-sm">
+          <div class="text-lg">🟢</div>
+          <div class="text-sm font-semibold mt-1" id="t_lowRisk">Low Risk</div>
+          <p class="text-xs text-slate-500" id="t_lowRiskDesc">Informational updates</p>
+        </div>
+        <div class="rounded-xl bg-white border border-slate-200 p-3 shadow-sm">
+          <div class="text-lg">🟠</div>
+          <div class="text-sm font-semibold mt-1" id="t_mediumRisk">Medium Risk</div>
+          <p class="text-xs text-slate-500" id="t_mediumRiskDesc">Be cautious</p>
+        </div>
+        <div class="rounded-xl bg-white border border-slate-200 p-3 shadow-sm">
+          <div class="text-lg">🔴</div>
+          <div class="text-sm font-semibold mt-1" id="t_highRisk">High Risk</div>
+          <p class="text-xs text-slate-500" id="t_highRiskDesc">Avoid the area</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Community Feed -->
+    <aside class="lg:col-span-1">
+      <div class="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden h-full flex flex-col">
+        <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+          <h2 class="font-semibold" id="t_feed">Community Feed</h2>
+          <button id="refreshFeed" class="text-xs px-3 py-1 rounded-lg border border-slate-300 hover:bg-slate-50">⟳ <span id="t_refresh">Refresh</span></button>
+        </div>
+        <ul id="feedList" class="divide-y divide-slate-100 overflow-auto" style="max-height: 540px;"></ul>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200">
+    <div class="max-w-6xl mx-auto grid grid-cols-4 text-sm">
+      <button class="py-3 hover:bg-slate-50" data-goto="#top">🏠 <span id="t_home">Home</span></button>
+      <button class="py-3 hover:bg-slate-50" data-goto="#map">🗺️ <span id="t_map">Map</span></button>
+      <button class="py-3 hover:bg-slate-50" data-goto="#feedList">📰 <span id="t_feedTab">Feed</span></button>
+      <button class="py-3 hover:bg-slate-50" id="openProfile">👤 <span id="t_profile">Profile</span></button>
+    </div>
+  </nav>
+  <!-- Sentiment Analysis Button -->
+<div class="login-card" onclick="openSentimentModal()">
+  📝 Analyze Text Sentiment
+</div>
+
+<!-- Sentiment Analysis Modal -->
+<div id="sentimentModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="card" role="document">
+    <span class="close-modal" onclick="closeSentimentModal()">&times;</span>
+    <h3>📝 Sentiment Analysis</h3>
+    <textarea id="sentimentInput" placeholder="Type your text here..." style="width:100%;height:100px;padding:8px;border-radius:6px;border:1px solid #ccc;margin-top:6px;"></textarea>
+    <button class="submit-btn" onclick="analyzeTextSentiment()">Analyze</button>
+    <div id="sentimentResult" style="margin-top:12px;font-weight:700;"></div>
+  </div>
+</div>
+
+  <!-- Report Modal -->
+  <dialog id="reportModal" class="rounded-2xl p-0 w-11/12 max-w-lg">
+    <form method="dialog" class="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden">
+      <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="font-semibold" id="t_reportTitle">Report Hazard</h3>
+        <button value="cancel" class="text-slate-500 hover:text-slate-700">✖</button>
+      </div>
+      <div class="p-4 space-y-3">
+        <div>
+          <label class="text-sm" for="rTitle" id="t_labelTitle">Title</label>
+          <input id="rTitle" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" placeholder="e.g., High tide near Juhu" required />
+        </div>
+        <div>
+          <label class="text-sm" for="rType" id="t_labelType">Type</label>
+          <select id="rType" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+            <option value="low">🟢 Low</option>
+            <option value="medium">🟠 Medium</option>
+            <option value="high">🔴 High</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm" for="rDesc" id="t_labelDesc">Description</label>
+          <textarea id="rDesc" rows="3" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" placeholder="Add details..."></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-sm" for="rLat">Lat</label>
+            <input id="rLat" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" placeholder="19.07" />
+          </div>
+          <div>
+            <label class="text-sm" for="rLng">Lng</label>
+            <input id="rLng" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" placeholder="72.87" />
+          </div>
+        </div>
+        <button type="button" id="useHere" class="text-xs px-3 py-1 rounded-lg border border-slate-300 hover:bg-slate-50">📍 <span id="t_useMapCenter">Use map center</span></button>
+      </div>
+      <div class="px-4 py-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+        <button value="cancel" class="px-4 py-2 rounded-xl border border-slate-300" id="t_cancel">Cancel</button>
+        <button id="submitReport" class="px-4 py-2 rounded-xl bg-rose-600 text-white" value="default" type="submit"><span id="t_submit">Submit</span></button>
+      </div>
+      <!--camera modal -->
+      <div>
+  <label class="text-sm">📸 Upload / Capture Photo</label>
+  <div class="flex gap-2">
+    <!-- File Upload -->
+    <input type="file" id="rPhoto" accept="image/*" 
+           class="flex-1 rounded-lg border border-slate-300 px-3 py-2" />
+
+    <!-- Live Camera Button -->
+    <button type="button" id="openCamera" 
+            class="px-3 py-2 rounded-lg bg-blue-600 text-white text-sm">
+      📷 Use Camera
+    </button>
+  </div>
+
+  <!-- Camera Modal -->
+  <dialog id="cameraModal" class="rounded-2xl p-0 w-11/12 max-w-lg">
+    <div class="bg-white p-4 rounded-2xl">
+      <video id="cameraStream" autoplay playsinline 
+             class="w-full rounded-lg border border-slate-300"></video>
+      <div class="flex justify-between mt-2">
+        <button type="button" id="capturePhoto" 
+                class="px-3 py-2 rounded-lg bg-green-600 text-white">📸 Capture</button>
+        <button type="button" onclick="document.getElementById('cameraModal').close()" 
+                class="px-3 py-2 rounded-lg bg-red-600 text-white">❌ Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Hidden input to store captured photo -->
+  <input type="hidden" id="capturedPhoto" />
+</div>
+
+    </form>
+  </dialog>
+
+  <!-- Tiny Profile Modal (placeholder) -->
+  <dialog id="profileModal" class="rounded-2xl p-0 w-96 max-w-[95vw]">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden">
+      <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="font-semibold" id="t_profileTitle">Profile</h3>
+        <button class="text-slate-500 hover:text-slate-700" onclick="document.getElementById('profileModal').close()">✖</button>
+      </div>
+      <div id="profileInfo" class="p-4 text-sm text-slate-600"></div>
+
+      <div class="px-4 py-3 bg-slate-50 border-t border-slate-100 text-right">
+        <button class="px-4 py-2 rounded-xl border border-slate-300" onclick="document.getElementById('profileModal').close()" id="t_close">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+ 
+
+</body>
+</html>
+
