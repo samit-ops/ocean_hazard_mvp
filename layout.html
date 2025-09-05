@@ -4,118 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Disaster Management Portal</title>
+ <link rel="stylesheet" href="layout.css">
 
-
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-sA+oKk0g0b2u6q6XkY3w8Xw2p6Q3C6p1wG6p7X1vYkM=" crossorigin=""/>
 
-  <style>
-    :root{
-      --accent: #0b76ef;
-      --muted: #666;
-      --card-bg: rgba(255,255,255,0.9);
-      --dark-bg: rgba(0,0,0,0.6);
-      --safe-bg: #2c3e50;
-    }
-    html,body{height:100%;margin:0;font-family:Inter,Arial,Helvetica,sans-serif}
-    body{
-      background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('https://i.ibb.co/r4jtVqp/disaster-bg.jpg') center/cover no-repeat;
-      color:#fff;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
-    }
-  
-
-    .middle-bottom-btn {text-align: center; margin-top: 20px;}
-    .ocean-btn {background: linear-gradient(135deg, #0077b6, #00b4d8); color: #fff; padding: 10px 24px; font-size: 15px; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s ease;}
-    .ocean-btn:hover {background: linear-gradient(135deg, #0096c7, #48cae4); transform: scale(1.07); box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);}
-
-    /* NAVBAR */
-    .navbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background: var(--dark-bg);position:relative;z-index:50;}
-    .brand{font-weight:700;font-size:1.15rem}
-    .hamburger{font-size:22px;cursor:pointer;margin-right:12px}
-    .navbar-right{display:flex;align-items:center;gap:12px}
-    .logo-right img{height:60px;display:block}
-    #language{padding:6px;border-radius:6px;border:0;background:#fff;color:#111;font-weight:600}
-
-    /* SIDEBAR */
-    .sidebar{position:fixed;left:0;top:0;height:100%;width:0;overflow:hidden;background: rgba(8,8,8,0.98);color:#fff;transition:width 0.28s;z-index:100;padding-top:70px;}
-    .sidebar a{display:block;padding:14px 22px;color:#ddd;text-decoration:none;font-weight:600}
-    .sidebar a:hover{background:#222}
-    .close-btn{position:absolute;right:12px;top:12px;font-size:26px;cursor:pointer}
-
-    /* MAIN CONTENT */
-    .container{max-width:1100px;margin:18px auto;padding:12px;flex:1;z-index:10}
-    .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 16px;border-radius:12px;}
-    .hero h1{margin:4px 0 8px;font-size:30px; text-shadow:2px 2px 6px rgba(0,0,0,0.7)}
-    .hero p{margin:0 0 18px;color:#e6eefc}
-    .login-options{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
-    .login-card{background:var(--card-bg);color:#111;padding:14px 20px;border-radius:10px;cursor:pointer;min-width:180px;box-shadow:0 6px 18px rgba(0,0,0,0.25);font-weight:700;text-align:center;}
-    .login-card:hover{transform:translateY(-6px);transition:0.18s}
-    .logos{display:flex;gap:24px;justify-content:center;margin-top:20px;flex-wrap:wrap}
-    .logos img{height:50px;background:#fff;padding:6px;border-radius:8px}
-
-    /* MAP SECTION */
-    #mapSection{display:none;padding:12px 0}
-    #map{width:100%;height:560px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,0.4)}
-    .map-back-btn{margin-top:12px;padding:10px 16px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer}
-
-    /* FOOTER */
-    footer{background: rgba(0,0,0,0.75);padding:18px;text-align:center;font-size:14px;color:#e6eefc}
-
-    /* MODALS */
-    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;padding:18px}
-    .modal .card{background:#fff;color:#111;padding:18px;border-radius:10px;max-width:520px;width:100%;max-height:90vh;overflow:auto}
-    .modal h3{margin:0 0 10px}
-    .form-row{display:flex;gap:10px}
-    .form-row .col{flex:1;min-width:0}
-    label{display:block;font-weight:700;margin-top:10px}
-    input[type="text"], select{width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;margin-top:6px}
-    .submit-btn{margin-top:14px;background:var(--accent);color:#fff;padding:10px;border:0;border-radius:6px;cursor:pointer;width:100%}
-    .close-modal{float:right;color:#d33;font-weight:700;cursor:pointer}
-
-    /* Ocean Modal */
-    #oceanModal .card{max-width:600px;}
-    #oceanModal select, #oceanModal button{width:100%;margin:6px 0;padding:8px;border-radius:6px;border:none;font-size:1rem}
-    #oceanInfo{margin-top:12px;background:rgba(0,0,0,0.1);padding:12px;border-radius:8px;color:#fff}
-
-    /* small screens */
-    @media (max-width:720px){
-      .hero h1{font-size:22px}
-      .logo-right img{height:48px}
-      .login-options{flex-direction:column}
-      #map{height:420px}
-    }
-    
-#language {
-  padding: 8px 12px;       
-  border-radius: 8px;      
-  border: none;
-  background: #fff;
-  color: #111;
-  font-weight: 600;
-  font-size: 14px;
-  min-width: 140px;      
-  max-width: 200px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-#language:hover {
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  transform: scale(1.03);
-}
-
-#language option {
-  padding: 6px;
-  font-size: 14px;
-}
-
-  </style>
 </head>
 <body>
-<!--navbar-->
+  
+  <!-- Add this inside <body>, before navbar-right or inside navbar -->
 <div class="navbar">
   <div class="hamburger" onclick="openSidebar()">☰</div>
   <div class="brand">Disaster Management Portal</div>
@@ -220,9 +118,9 @@
       </div>
 
       <div class="logos" aria-hidden="false">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/UNDP_logo.svg" alt="UNDP">
+        
         <img src="ndrf.png" alt="NDRF">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/WHO_logo.svg" alt="WHO">
+        
       </div>
     </section>
 
@@ -244,35 +142,68 @@
     <div style="margin-top:6px;font-size:12px;color:#cfe6ff">&copy; 2025 Disaster Management Portal</div>
   </footer>
 
-  <!-- CITIZEN FORM MODAL -->
-  <div id="citizenModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="card" role="document">
-      <span class="close-modal" onclick="closeCitizenForm()">&times;</span>
-      <h3 id="formTitle">Citizen Registration</h3>
-      <form id="citizenForm" onsubmit="handleFormSubmit(event)">
-        <label id="lblName">Name</label>
-        <input id="inpName" type="text" required placeholder="Full name">
-        <label id="lblAadhaar">Aadhaar Number</label>
-        <input id="inpAadhaar" type="text" maxlength="12" inputmode="numeric" pattern="\d{12}" placeholder="12 digit Aadhaar" required>
-        <label id="lblGender">Gender</label>
-        <select id="inpGender" required>
-          <option value="">Select</option>
-          <option>Male</option>
-          <option>Female</option>
-          <option>Other</option>
-        </select>
-        <label id="lblState">State / UT</label>
-        <select id="inpState" required onchange="stateChanged()"></select>
-        <label id="lblDistrict">District</label>
-        <select id="inpDistrictSelect" style="display:none"></select>
-        <input id="inpDistrictText" type="text" placeholder="District" style="display:none">
-        <label id="lblCity">City / Town</label>
-        <select id="inpCitySelect" style="display:none"></select>
-        <input id="inpCityText" type="text" placeholder="City / Town" style="display:none">
-        <button class="submit-btn" id="submitBtn" type="submit">Submit</button>
-      </form>
-    </div>
+<!-- CITIZEN FORM MODAL -->
+<div id="citizenModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="card" role="document">
+    <span class="close-modal" onclick="closeCitizenForm()">&times;</span>
+    <h3 id="formTitle">Citizen Registration</h3>
+
+    <form id="citizenForm">
+      <!-- Name -->
+      <label id="lblName" for="inpName">Name</label>
+      <input type="text" id="inpName" name="name" placeholder="Enter your name" required />
+
+      <!-- Aadhaar -->
+      <label id="lblAadhaar" for="inpAadhaar">Aadhaar Number</label>
+      <input type="text" id="inpAadhaar" name="aadhaar" placeholder="Enter Aadhaar number" required maxlength="12" pattern="\d{12}" />
+
+      <!-- Gender -->
+      <label id="lblGender" for="inpGender">Gender</label>
+      <select id="inpGender" name="gender" required>
+        <option value="">-- Select Gender --</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <!-- State / UT -->
+      <label id="lblState" for="inpCoastalState">State / UT</label>
+      <select id="inpCoastalState" name="state" required>
+        <option value="">-- Select State / UT --</option>
+        <option value="Gujarat">Gujarat</option>
+        <option value="Maharashtra">Maharashtra</option>
+        <option value="Goa">Goa</option>
+        <option value="Karnataka">Karnataka</option>
+        <option value="Kerala">Kerala</option>
+        <option value="Tamil Nadu">Tamil Nadu</option>
+        <option value="Andhra Pradesh">Andhra Pradesh</option>
+        <option value="Odisha">Odisha</option>
+        <option value="West Bengal">West Bengal</option>
+        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+        <option value="Lakshadweep">Lakshadweep</option>
+        <option value="Puducherry">Puducherry</option>
+        <option value="Daman and Diu">Daman and Diu</option>
+      </select>
+
+      <!-- District -->
+      <label id="lblDistrict" for="inpCoastalDistrict">District</label>
+      <select id="inpCoastalDistrict" name="district" required>
+        <option value="">-- Select District --</option>
+      </select>
+
+      <!-- City / Town -->
+      <label id="lblCity" for="inpCity">City / Town</label>
+      <input type="text" id="inpCity" name="city" placeholder="Enter your city / town" required />
+
+      <!-- Submit -->
+      <button type="submit" id="submitBtn" class="submit-btn">Submit</button>
+    </form>
   </div>
+</div>
+
+
+
+
 
   <!-- OCEAN INFO MODAL -->
   <div id="oceanModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
@@ -295,13 +226,10 @@
       <div id="oceanInfo"></div>
     </div>
   </div>
-
-  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-o9N1j7kXg+0b2u6q6XkY3w8Xw2p6Q3C6p1wG6p7X1vYkM=" crossorigin=""></script>
-
-  <script>
-    /* ------------------ Sidebar & Sections ------------------ */
+    <script>
+      /* ------------------ Sidebar & Sections ------------------ */
     function openSidebar(){ document.getElementById('sidebar').style.width='300px'; document.getElementById('sidebar').setAttribute('aria-hidden','false') }
     function closeSidebar(){ document.getElementById('sidebar').style.width='0'; document.getElementById('sidebar').setAttribute('aria-hidden','true') }
     function showHome(){ closeSidebar(); document.getElementById('homeSection').style.display='block'; document.getElementById('mapSection').style.display='none'; }
@@ -371,6 +299,58 @@ function closeEmergencyModal(){
   document.getElementById('emergencyModal').style.display='none';
   document.getElementById('emergencyModal').setAttribute('aria-hidden','true');
 }
+
+// --- Districts per state ---
+const stateDistricts = {
+  "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar"],
+  "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik"],
+  "Goa": ["North Goa", "South Goa"],
+  "Karnataka": ["Bengaluru", "Mysuru", "Mangaluru", "Hubli-Dharwad", "Belagavi"],
+  "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Alappuzha"],
+  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem"],
+  "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Tirupati", "Kadapa"],
+  "Odisha": ["Bhubaneswar", "Cuttack", "Puri", "Rourkela", "Sambalpur"],
+  "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Siliguri", "Darjeeling"],
+  "Andaman and Nicobar Islands": ["Port Blair"],
+  "Lakshadweep": ["Kavaratti"],
+  "Puducherry": ["Puducherry"],
+  "Daman and Diu": ["Daman", "Diu"]
+};
+
+// --- Populate districts based on state selection ---
+const stateSelect = document.getElementById('inpCoastalState');
+const districtSelect = document.getElementById('inpCoastalDistrict');
+
+stateSelect.addEventListener('change', () => {
+  const selectedState = stateSelect.value;
+  districtSelect.innerHTML = '<option value="">-- Select District --</option>'; // Reset
+
+  if(selectedState && stateDistricts[selectedState]){
+    stateDistricts[selectedState].forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d;
+      districtSelect.appendChild(opt);
+    });
+  }
+});
+
+// --- Optional: save citizen form locally ---
+document.getElementById('citizenForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const userProfile = {
+    name: document.getElementById('inpName').value,
+    aadhaar: document.getElementById('inpAadhaar').value,
+    gender: document.getElementById('inpGender').value,
+    state: document.getElementById('inpCoastalState').value,
+    district: document.getElementById('inpCoastalDistrict').value,
+    city: document.getElementById('inpCity').value
+  };
+  localStorage.setItem('userProfile', JSON.stringify(userProfile));
+  alert("Profile saved successfully!");
+  closeCitizenForm();
+});
+
 /* language js function*/
 
 function changeLanguage() {
@@ -543,8 +523,30 @@ function changeLanguage() {
     }
 
     function handleFormSubmit(e){ e.preventDefault(); alert("Form submitted! (Placeholder)"); closeCitizenForm(); }
-   
-  </script>
+
+    document.getElementById('citizenForm').addEventListener('submit', function(e){
+  e.preventDefault(); // prevent default form submission
+
+  // Collect form data
+  const userProfile = {
+    name: document.getElementById('inpName').value.trim(),
+    aadhaar: document.getElementById('inpAadhaar').value.trim(),
+    gender: document.getElementById('inpGender').value,
+    state: document.getElementById('inpCoastalState').value,
+    district: document.getElementById('inpCoastalDistrict').value,
+    city: document.getElementById('inpCity').value.trim()
+  };
+
+  // Save to localStorage
+  localStorage.setItem('userProfile', JSON.stringify(userProfile));
+
+  // Close the modal
+  closeCitizenForm();
+
+  // Redirect to ui.html
+  window.location.href = 'ui.html';
+});</script>
+
+
 </body>
 </html>
-
