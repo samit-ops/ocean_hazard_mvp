@@ -1,0 +1,131 @@
+
+    :root{
+      --accent: #0b76ef;
+      --muted: #666;
+      --card-bg: rgba(255,255,255,0.9);
+      --dark-bg: rgba(0,0,0,0.6);
+      --safe-bg: #2c3e50;
+    }
+    html,body{height:100%;margin:0;font-family:Inter,Arial,Helvetica,sans-serif}
+    body{
+      background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('background image.jpg') center/cover no-repeat;
+      color:#fff;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+  
+
+    .middle-bottom-btn {text-align: center; margin-top: 20px;}
+    .ocean-btn {background: linear-gradient(135deg, #0077b6, #00b4d8); color: #fff; padding: 10px 24px; font-size: 15px; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s ease;}
+    .ocean-btn:hover {background: linear-gradient(135deg, #0096c7, #48cae4); transform: scale(1.07); box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);}
+
+    /* NAVBAR */
+    .navbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background: var(--dark-bg);position:relative;z-index:50;}
+    .brand{font-weight:700;font-size:1.15rem}
+    .brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 700;
+  font-size: 1.15rem;
+  text-align: center;
+  z-index: 10;
+   /* make sure it stays above background */
+}
+
+    .hamburger{font-size:22px;cursor:pointer;margin-right:12px}
+    .navbar-right{display:flex;align-items:center;gap:12px}
+    .logo-right img{height:60px;display:block}
+    #language{padding:6px;border-radius:6px;border:0;background:#fff;color:#111;font-weight:600}
+
+    /* SIDEBAR */
+    .sidebar{position:fixed;left:0;top:0;height:100%;width:0;overflow:hidden;background: rgba(8,8,8,0.98);color:#fff;transition:width 0.28s;z-index:100;padding-top:70px;}
+    .sidebar a{display:block;padding:14px 22px;color:#ddd;text-decoration:none;font-weight:600}
+    .sidebar a:hover{background:#222}
+    .close-btn{position:absolute;right:12px;top:12px;font-size:26px;cursor:pointer}
+
+    /* MAIN CONTENT */
+    .container{max-width:1100px;margin:18px auto;padding:12px;flex:1;z-index:10}
+    .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 16px;border-radius:12px;}
+    .hero h1{margin:4px 0 8px;font-size:30px; text-shadow:2px 2px 6px rgba(0,0,0,0.7)}
+    .hero p{margin:0 0 18px;color:#e6eefc}
+    .login-options{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+    .login-card{background:var(--card-bg);color:#111;padding:14px 20px;border-radius:10px;cursor:pointer;min-width:180px;box-shadow:0 6px 18px rgba(0,0,0,0.25);font-weight:700;text-align:center;}
+    .login-card:hover{transform:translateY(-6px);transition:0.18s}
+    .logos{display:flex;gap:24px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+    .logos img{height:50px;background:#fff;padding:6px;border-radius:8px}
+
+    /* MAP SECTION */
+    #mapSection{display:none;padding:12px 0}
+    #map{width:100%;height:560px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,0.4)}
+    .map-back-btn{margin-top:12px;padding:10px 16px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+
+    /* FOOTER */
+    footer{background: rgba(0,0,0,0.75);padding:18px;text-align:center;font-size:14px;color:#e6eefc}
+
+    /* MODALS */
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;padding:18px}
+    .modal .card{background:#fff;color:#111;padding:18px;border-radius:10px;max-width:520px;width:100%;max-height:90vh;overflow:auto}
+    .modal h3{margin:0 0 10px}
+    .form-row{display:flex;gap:10px}
+    .form-row .col{flex:1;min-width:0}
+    label{display:block;font-weight:700;margin-top:10px}
+    input[type="text"], select{width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;margin-top:6px}
+    .submit-btn{margin-top:14px;background:var(--accent);color:#fff;padding:10px;border:0;border-radius:6px;cursor:pointer;width:100%}
+    .close-modal{float:right;color:#d33;font-weight:700;cursor:pointer}
+    #citizenForm label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+}
+
+#citizenForm input, 
+#citizenForm select {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+
+    /* Ocean Modal */
+    #oceanModal .card{max-width:600px;}
+    #oceanModal select, #oceanModal button{width:100%;margin:6px 0;padding:8px;border-radius:6px;border:none;font-size:1rem}
+    #oceanInfo{margin-top:12px;background:rgba(0,0,0,0.1);padding:12px;border-radius:8px;color:#fff}
+
+    /* small screens */
+    @media (max-width:720px){
+      .hero h1{font-size:22px}
+      .logo-right img{height:48px}
+      .login-options{flex-direction:column}
+      #map{height:420px}
+    }
+    
+#language {
+  padding: 8px 12px;       
+  border-radius: 8px;      
+  border: none;
+  background: #fff;
+  color: #111;
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 140px;      
+  max-width: 200px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+#language:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  transform: scale(1.03);
+}
+
+#language option {
+  padding: 6px;
+  font-size: 14px;
+}
